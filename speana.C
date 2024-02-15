@@ -1,6 +1,6 @@
 //This macro was made by abullock and aszelc for SBND, July 2023
 //For a given channel, scan waveforms for single photoelectron (SPE) events and perform an analysis on them
-
+// memes
 void speana() {
   //CONFIG
   Int_t opc = 85; //opchannel as an integer
