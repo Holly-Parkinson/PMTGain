@@ -1,2 +1,2 @@
 # PMTGain
-PMT peak finding code: my code, Alex Bullock's original code, some files to run on
+PMT peak finding code: my code and Alex Bullock's original code. Find files to run on at /
