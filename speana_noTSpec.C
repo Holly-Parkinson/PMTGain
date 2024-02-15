@@ -75,13 +75,13 @@ for (size_t i = 0; i < numChannels; ++i) {
   cout << "Launching..." << endl;
 
   //OPEN THE FILE, GET KEYS FOR RECO WAVEFORMS
-  TFile *myWvf = new TFile("/exp/sbnd/data/users/hollyp/larsoft_workdir/wvf_ana.root"); // open the waveform file and store under pointer myWvf
+  TFile *myWvf = new TFile("/exp/sbnd/data/users/hollyp/PMTGain/wvf_ana.root"); // open the waveform file and store under pointer myWvf
   TFile *wvfana = (TFile*) myWvf->Get("wvfana"); // get subdirectory with waveforms in it
   TList *keys = wvfana->GetListOfKeys(); // get list of all the waveforms in wvfana
   int nkeys = keys->GetEntries();
 
   //OPEN THE FILE, GET TTREE FOR TRUTH
-  TFile *myTruth = new TFile("/exp/sbnd/data/users/hollyp/larsoft_workdir/opdet_ana.root"); // open the file and store under pointer myTruth
+  TFile *myTruth = new TFile("/exp/sbnd/data/users/hollyp/PMTGain/opdet_ana.root"); // open the file and store under pointer myTruth
   TFile *opdetana = (TFile*) myTruth->Get("opdetana"); // get subdirectory
   TTree *a = (TTree*) opdetana->Get("AllPhotons"); // get the ttree out of the file  
 
