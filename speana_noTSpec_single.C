@@ -367,9 +367,10 @@ if (do_avgspe) {
 
   //AMPLITUDES OF SPES
 if (do_amp) {
-  for (int i=0; i<navspes; i++) { //iterate through the found spe positions
+  for (int i=0; i<nspe; i++) { //iterate through the found spe positions
     Int_t peakbin = wvf_spet[i]; //get bin associated with peak time
-    Double_t peakheight =  wvfm.at(i); //get the value of the highest bin (the amplitude) WHY IS THIS GIVING NEGATIVE?? //THIS COULD BE OUR ERROR
+    cout << peakbin << " = peakbin number" << endl;
+    Double_t peakheight =  wvfm.at(peakbin); //get the value of the highest bin (the amplitude) WHY IS THIS GIVING NEGATIVE?? //THIS COULD BE OUR ERROR
     cout << peakheight  << " = peakheight" << endl;
     
     amp->Fill(peakheight); //add to histogram
