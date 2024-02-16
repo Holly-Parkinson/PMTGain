@@ -41,7 +41,7 @@ void speana_noTSpec() {
   double nbmax_factor=0.9,nbmin_factor=0.1;  //set noise analysis range 1 (pre peaks): noisebinmax = highestbin*nbmax_factor
   double n2bmin_factor=0.9; //set noise analysis range 2 (post peaks), upper bound is just wvf_nbins: noisebin2min = n2bmin_factor*wvf_nbins
 
-  double pulse_area;
+ 
   double pulse_peak;
   double pulse_t_start;
   double pulse_t_end;
@@ -124,8 +124,6 @@ if (right_channel && right_event) { //only continue if it's the right opc
   analysis_active=true; //this key is being analyzed
   cout << "Analyzing " << *wvf_name << endl;
   //Int_t new_index=wvf_name->Index("event_5_opchannel_85_pmt_coated_1380");
-  //std::cout << new_index << std::endl;
-  //std::cout << "test 1" << std::endl;
   //if (new_index == -1) continue;
 
   //GET INFO ON THE WAVEFORM
@@ -251,7 +249,7 @@ if (!all_events) {
   Double_t highestval = wvfm.at(highestbin); //height of the highest peak, from which the threshold will be determined
   //thresh = stdev * nstdev / (highestval); //threshold defined as some number of stdevs above mean, as a fraction of the highest peak height
   thresh = stdev * nstdev ; //threshold defined as some number of stdevs above mean, as a fraction of the highest peak height
-  //cout << "Threshold set to: " << nstdev*stdev << "/" << highestval-mean << " = " << thresh << endl;
+  //cout << "Threshold set to: " << thresh << endl;
 
 // Andrzej: why would you base your threshold on the highest value? 
 
@@ -265,16 +263,9 @@ if (!all_events) {
   double start_threshold = thresh; //maybe put all of these outside the loop? 
   double end_threshold = thresh; 
 
- 
-  //double pulse_area;
-  //double pulse_peak;
-  //double pulse_t_start;
-  //double pulse_t_end;
-  //double pulse_t_peak;
-  //vector<double> pulse_t_peak_v;
 
-
-  pulse_area = 0; pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
+  pulse_t_peak_v.clear();
+  pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
   counter = spe_region_start;
   for (int i=spe_region_start; i<wvfm.size(); i++){
     //for (auto const &adc : wvfm){ 
@@ -299,7 +290,7 @@ if (!all_events) {
 	 pulse_t_peak_v.push_back(pulse_t_peak);
 	 peak_count++;
        }
-       pulse_area = 0; pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
+       pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
  
      }   
   
@@ -317,22 +308,15 @@ if (!all_events) {
      if (peak_count==200) {cout << "  Analysis Failure: Threshold setting unsuccessful." << endl; failed++; continue;}
    }
 
-  std::cout << "npulses " << peak_count << std::endl;
   
    if(fire){ // Take care of a pulse that did not finish within the readout window.
      fire = false;
      pulse_t_end = counter - 1;
-     //pulse_vec.push_back(pulse);
-     pulse_area = 0; pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
+     pulse_peak = 0; pulse_t_start = 0; pulse_t_end = 0; pulse_t_peak = 0;
    }
  
 
-  //TSPECTRUM - COMMENT ALL OF THIS OUT!
-  //cout << "SPE range set to " << (wvf_tlo + sperange_tlo) << "µs—" << (wvf_tlo + sperange_thi) << "µs." << endl;
-  // Int_t np = s->Search(wvf, 3, "nodraw", thresh); //search for peaks in hist and return how many there are: REPLACE THIS WITH COUNTER!
-  //Double_t *wvf_pt = s->GetPositionX(); //get an array of the times where peaks are found: REPLACE WITH SOMETHING, PT = X POSITION
-  //for (int i=0; i<np; i++) {cout << wvf_pt[i] << endl;}
-  //if (np==200) {cout << "  Analysis Failure: Threshold setting unsuccessful." << endl; failed++; continue;} //>200 failsafe for if it picks up noise; CHANGE TO COUNTER
+  //TSPECTRUM USED TO BE HERE
 
   auto wvf_pt = pulse_t_peak_v;
 
@@ -341,37 +325,24 @@ if (!all_events) {
   //ISOLATE SPE PEAKS FROM ALL THE PEAKS -- potentially edit/remove this block because our threshold window for peak searching is already the SPE range
   int nspe = 0; //how many peaks are within the spe region
   for (int i=0; i<peak_count; i++) { //loop through all peak positions
-    //std::cout << "wvf_pt[i] = " << wvf_pt[i] << ", wvf_tlo = " << wvf_tlo << ", sperange_tlo = " << sperange_tlo << ", sperange_thi = " << sperange_thi << std::endl;
-    //if (wvf_pt[i] >= (wvf_tlo + sperange_tlo) && wvf_pt[i] <= (wvf_tlo + sperange_thi)) {nspe++;} //only count peaks within the special SPE range
     nspe++;
   }
   Double_t wvf_spet[nspe]; int j=0; //create array for them
-  for (int i=0; i<peak_count; i++) { //loop through all peak positions
-  //cout << "peak x position " << wvf_pt[i] << endl;
-   // if (wvf_pt[i] >= (wvf_tlo + sperange_tlo) && wvf_pt[i] <= (wvf_tlo + sperange_thi)) { COMMENTED OUT FOR TEST
-      //cout << "passed next stage " << wvf_pt[i] << endl; 
+  for (int i=0; i<peak_count; i++) { //loop through all peak positions 
       wvf_spet[j] = wvf_pt[i]; //add SPEs to the array
-      //cout << "peak x position in SPE array " << wvf_spet[j] << endl;
 
       j++;
-    //} COMMENTED OUT FOR TEST
+   
   }
   if (nspe==0) {cout << "  Analysis Failure: No SPEs found in this waveform." << endl; failed++; continue;} //if no SPEs are found
-  for (int i=0; i<nspe; i++) {cout << "SPE x added to array " << wvf_spet[i] << endl;}
+ 
 
 
-  //ADJUST BASELINE
- //Double_t baseline = 1 * mean; CHANGED TO POSITIVE 1, MAKES NO DIFF TO SPE SELECTION WHEN UNCOMMENTED
-  //for (int i=1; i<=wvf_nbins; i++) { //adjust baseline : WHY was this commented out? should this be in but without the -1?
-  //wvf->AddBinContent(i, baseline);
-  //}
 
   //AVERAGE SPE SHAPE HISTOGRAM
 if (do_avgspe) {
   for (int i=0; i<nspe; i++) { //iterate through the found spe positions
-  //  Int_t peakbin = wvf->FindBin(wvf_spet[i]); //get bin associated with peak time
-      Int_t peakbin = wvf_spet[i]; // this ACTUALLY does the above
-      cout << "bin associated with peak time " << peakbin << endl; //ALL PEAKBINS ARE THE SAME FOR EACH SPE SET: until i changed int_peakbin. confusion as to what is x value and what is bin number 
+      Int_t peakbin = wvf_spet[i]; // get bin associated with peak time 
    if(peakbin-lowbin <0 || peakbin+hibin>wvf_nbins) //aszelc addition—check to make sure the bin numbers do not cause an error
       {continue;}
 
@@ -398,10 +369,8 @@ if (do_avgspe) {
   //AMPLITUDES OF SPES
 if (do_amp) {
   for (int i=0; i<nspe; i++) { //iterate through the found spe positions
-    //Int_t peakbin = wvf->FindBin(wvf_spet[i]); //get bin associated with peak time
-    Int_t peakbin = wvf_spet[i]; //actually gets the above
-    Double_t peakheight = mean - (wvf->GetBinContent(peakbin)); //get the value of the highest bin (the amplitude), take off the baseline, and make it positive
-  // cout << "amplitude = " << peakheight*(-1) << "peak bin time" << peakbin << endl; //can we see what amplitudes we get
+    Int_t peakbin = wvf_spet[i]; //get bin associated with peak time
+    Double_t peakheight = wvfm.at(peakbin);
     amp->Fill(peakheight); //add to histogram
     if (!do_avgspe) {navspes++;} //count total spes here if we aren't already
   }
@@ -416,39 +385,39 @@ if (do_integ) {
       continue;
     //zeromode bounds
     int ilo=0, ihi=0; //set bounds initially
-    Double_t val = mean - (wvf->GetBinContent(peakbin)); //edited for baseline subtraction
+    Double_t val = wvfm.at(peakbin); //edited for baseline subtraction
     while (val>(0)) { //check whether a bin is below noise threshold (indicating a bound on the peak)
       ilo++;
-      val = mean - (wvf->GetBinContent(peakbin-ilo)); //go one bin left
+      val = wvfm.at(peakbin-ilo); //go one bin left
     }
-    val = mean - (wvf->GetBinContent(peakbin)); //reset for other bound
+    val = wvfm.at(peakbin); //reset for other bound
     while (val>(0)) { //repeat the process for the other bound
       ihi++;
-      val = mean - (wvf->GetBinContent(peakbin+ihi)); //go one bin right
+      val = wvfm.at(peakbin+ihi); //go one bin right
     }
     ilo--; ihi--; //the bounds search stops at one greater than the true bounds
     Double_t integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j)); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j); //add the values to the histogram
       integral += le_bin;
     }
     integ0->Fill(integral); //add integral
     //threshmode bounds
     ilo=0, ihi=0; //set bounds initially
-    val = mean - (wvf->GetBinContent(peakbin));
+    val = wvfm.at(peakbin);
     while (val>(stdev*nstdev)) { //check whether a bin is below noise threshold (indicating a bound on the peak)
       ilo++;       
-      val = mean - (wvf->GetBinContent(peakbin-ilo)); //go one bin left
+      val = wvfm.at(peakbin-ilo); //go one bin left
     }
-    val = mean - (wvf->GetBinContent(peakbin)); //reset for other bound
+    val = wvfm.at(peakbin); //reset for other bound
     while (val>(stdev*nstdev)) { //repeat the process for the other bound
       ihi++;
-      val = mean - (wvf->GetBinContent(peakbin+ihi)); //go one bin right
+      val = wvfm.at(peakbin+ihi); //go one bin right
     }
     ilo--; ihi--; //the bounds search stops at one greater than the true bounds
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j)); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j); //add the values to the histogram
       integral += le_bin;
     }
     integ1->Fill(integral); //add integral 
@@ -456,7 +425,7 @@ if (do_integ) {
     ilo=7, ihi=10; //set bounds manually
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j)); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j); //add the values to the histogram
       integral += le_bin;
     }
     integ2->Fill(integral); //add integral
@@ -469,48 +438,48 @@ if (do_integ) {
     if(peakbin-lowbin <0 || peakbin+hibin>wvf_nbins) //aszelc addition—check to make sure the bin numbers do not cause an error
       continue;
     //local baseline calculation
-    Double_t vallow = mean - (wvf->GetBinContent(peakbin-50));
-    Double_t valhi = mean - (wvf->GetBinContent(peakbin+50));
+    Double_t vallow = wvfm.at(peakbin-50);
+    Double_t valhi = wvfm.at(peakbin+50);
     Double_t bsl = (vallow + valhi) / 2; //average the two
     //zeromode bounds
     int ilo=0, ihi=0; //set bounds initially
-    Double_t val = mean - (wvf->GetBinContent(peakbin) - bsl);
+    Double_t val = wvfm.at(peakbin) - bsl;
     while (val>(0)) { //check whether a bin is below noise threshold (indicating a bound on the peak)
       ilo++;
-      val = mean - (wvf->GetBinContent(peakbin-ilo) - bsl); //go one bin left
+      val = wvfm.at(peakbin-ilo) - bsl; //go one bin left
       if (ilo==50) {break;} //keep it from going too wide
     }
-    val = mean - (wvf->GetBinContent(peakbin) - bsl); //reset for other bound
+    val = wvfm.at(peakbin) - bsl; //reset for other bound
     while (val>(0)) { //repeat the process for the other bound
       ihi++;
-      val = mean - (wvf->GetBinContent(peakbin+ihi) - bsl); //go one bin right
+      val = wvfm.at(peakbin+ihi) - bsl; //go one bin right
       if (ihi==50) {break;} //keep it from going too wide
     }
     ilo--; ihi--; //the bounds search stops at one greater than the true bounds
     Double_t integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j) - bsl); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j) - bsl; //add the values to the histogram
       integral += le_bin;
     }
     integ3->Fill(integral); //add integral
     //threshmode bounds
     ilo=0, ihi=0; //set bounds initially
-    val = mean - (wvf->GetBinContent(peakbin) - bsl);
+    val = wvfm.at(peakbin) - bsl;
     while (val>(stdev*nstdev)) { //check whether a bin is below noise threshold (indicating a bound on the peak)
       ilo++;
-      val = mean - (wvf->GetBinContent(peakbin-ilo) - bsl); //go one bin left
+      val = wvfm.at(peakbin-ilo) - bsl; //go one bin left
       if (ilo==50) {break;} //keep it from going too wide
     }
-    val = mean - (wvf->GetBinContent(peakbin) - bsl); //reset for other bound
+    val = wvfm.at(peakbin) - bsl; //reset for other bound
     while (val>(stdev*nstdev)) { //repeat the process for the other bound
       ihi++;
-      val = mean - (wvf->GetBinContent(peakbin+ihi) - bsl); //go one bin right
+      val = wvfm.at(peakbin+ihi) - bsl; //go one bin right
       if (ihi==50) {break;} //keep it from going too wide
     }
     ilo--; ihi--; //the bounds search stops at one greater than the true bounds
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j) - bsl); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j) - bsl; //add the values to the histogram
       integral += le_bin;
     }
     integ4->Fill(integral); //add integral 
@@ -518,7 +487,7 @@ if (do_integ) {
     ilo=7, ihi=10; //set bounds manually
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
-      Double_t le_bin = mean - (wvf->GetBinContent(peakbin+j) - bsl); //add the values to the histogram
+      Double_t le_bin = wvfm.at(peakbin+j) - bsl; //add the values to the histogram
       integral += le_bin;
     }
     integ5->Fill(integral); //add integral
