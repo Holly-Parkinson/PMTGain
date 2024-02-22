@@ -40,7 +40,8 @@ void speana_noTSpec() {
   double* gamma; //was advised to keep outside of main loop
   double nbmax_factor=0.9,nbmin_factor=0.1;  //set noise analysis range 1 (pre peaks): noisebinmax = highestbin*nbmax_factor
   double n2bmin_factor=0.9; //set noise analysis range 2 (post peaks), upper bound is just wvf_nbins: noisebin2min = n2bmin_factor*wvf_nbins
-
+  int manual_bound_hi = 10;
+  int manual_bound_lo = 7;
  
   double pulse_peak;
   double pulse_t_start;
@@ -422,7 +423,7 @@ if (do_integ) {
     }
     integ1->Fill(integral); //add integral 
     //manualmode bounds
-    ilo=7, ihi=10; //set bounds manually
+    ilo=manual_bound_lo, ihi=manual_bound_hi; //set bounds manually
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
       Double_t le_bin = wvfm.at(peakbin+j); //add the values to the histogram
@@ -484,7 +485,7 @@ if (do_integ) {
     }
     integ4->Fill(integral); //add integral 
     //manualmode bounds
-    ilo=7, ihi=10; //set bounds manually
+    ilo=manual_bound_lo, ihi=manual_bound_hi; //set bounds manually
     integral = 0;
     for (int j=ilo*-1; j<=ihi; j++) { //loop over range surrounding peak
       Double_t le_bin = wvfm.at(peakbin+j) - bsl; //add the values to the histogram
@@ -510,7 +511,7 @@ else { //if it wasn't the right channel
 //NORMALIZE AVGSPE
 for (int j=1;j<=NBINS;j++){
   Double_t le_bin=avgspe->GetBinContent(j); //get a bin
-  Double_t norm = -1 * le_bin * (navspes-1) / navspes; //amount to subtract to reduce le_bin to le_bin/navspes
+  Double_t norm = -1 * le_bin * (navspes-1) / navspes; //amount to subtract to reduce le_bin to le_bin/navspes: CHECK THIS IS CORRECT
   avgspe->AddBinContent(j, norm); //add it
 }
 
